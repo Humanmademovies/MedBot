@@ -1,6 +1,7 @@
 # Ignorer le modèle GGUF
 Model/
 *.gguf
+
 # 🐍 Fichiers Python
 __pycache__/
 *.pyc
@@ -23,6 +24,25 @@ pip-wheel-metadata/
 # 🧠 Modèles lourds et fichiers binaires
 Model/
 *.gguf
+
+# 📑 Notebooks
+*.ipynb
+
+# 📄 Fichiers PDF
+*.pdf
+
+# 🌐 Torrents
+*.torrent
+
+# 🖼️ Images
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.webp
+*.bmp
+*.tiff
+*.svg
 
 # 🐋 Docker (si besoin)
 *.env

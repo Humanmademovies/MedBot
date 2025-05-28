@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes Conversations - MedBot</title>
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Mes Conversations</h1>
+    <a href="/new">+ Nouvelle conversation</a>
+    <ul>
+        {% for conv in conversations %}
+            <li><a href="/switch/{{ conv.id }}">{{ conv.title }} ({{ conv.created_at }})</a></li>
+        {% endfor %}
+    </ul>
+    <p><a href="/">Retour</a></p>
+</body>
+</html>
