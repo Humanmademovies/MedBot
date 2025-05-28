@@ -1,0 +1,9 @@
+Model/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.git
+.gitignore
+tests

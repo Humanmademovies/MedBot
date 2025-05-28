@@ -1,0 +1,3 @@
+# Ignorer le modèle GGUF
+Model/
+*.gguf
