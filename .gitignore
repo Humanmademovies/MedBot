@@ -1,3 +1,39 @@
 # Ignorer le modèle GGUF
 Model/
 *.gguf
+# 🐍 Fichiers Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 📦 Dossiers d'environnement virtuel
+venv/
+.env/
+.venv/
+
+# 📦 Dépendances pip locales
+pip-wheel-metadata/
+*.egg-info/
+
+# 🧪 Fichiers de test ou temporaires
+*.log
+*.sqlite3
+
+# 🧠 Modèles lourds et fichiers binaires
+Model/
+*.gguf
+
+# 🐋 Docker (si besoin)
+*.env
+*.env.*
+docker-compose.override.yml
+
+# 💻 Systèmes
+.DS_Store
+Thumbs.db
+
+# 🔐 Clés ou fichiers sensibles (si jamais)
+*.pem
+*.key
+*.crt
