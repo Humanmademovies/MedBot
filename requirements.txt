@@ -1,0 +1,11 @@
+flask
+sqlalchemy
+werkzeug
+transformers
+torch
+sentence-transformers
+markdown
+faiss-cpu
+pillow
+PyPDF2
+accelerate

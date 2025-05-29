@@ -1,7 +1,7 @@
 # Ignorer le modèle GGUF
 Model/
 *.gguf
-
+MedBot.py
 # 🐍 Fichiers Python
 __pycache__/
 *.pyc

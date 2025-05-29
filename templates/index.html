@@ -216,7 +216,8 @@
             {{ history | safe }}
         </div>
 
-        <form id="chat-form" hx-post="/chat" hx-target="#chat-box" hx-swap="beforeend" hx-encoding="multipart/form-data">
+        <form id="chat-form" enctype="multipart/form-data">
+
             <input type="hidden" name="username" value="default_user">
             <input type="text" name="message" placeholder="Posez votre question" required autocomplete="off">
             <input type="file" name="file">
@@ -262,6 +263,54 @@
         document.getElementById('loading-spinner').style.display = 'none';
     });
     </script>
+    <script>const form = document.getElementById('chat-form');
+    const chatBox = document.getElementById('chat-box');
 
+    form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const userMsg = formData.get('message');
+
+    // Affiche la bulle utilisateur
+    const userBubble = document.createElement('div');
+    userBubble.className = 'message user';
+    userBubble.innerHTML = `<div class="bubble">${userMsg}</div>`;
+    chatBox.appendChild(userBubble);
+
+    // Prépare bulle assistant vide
+    let assistantBubble = document.createElement('div');
+    assistantBubble.className = 'message assistant';
+    assistantBubble.innerHTML = '<div class="bubble"></div>';
+    chatBox.appendChild(assistantBubble);
+    const assistantBubbleContent = assistantBubble.querySelector('.bubble');
+
+    // Envoie la requête fetch avec streaming
+    const response = await fetch('/chat', {
+        method: 'POST',
+        body: formData,
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+
+    let accumulated = "";
+
+    while (!done) {
+    const {value, done: doneReading} = await reader.read();
+    done = doneReading;
+    if (value) {
+        const chunk = decoder.decode(value, {stream: true});
+        accumulated += chunk;
+        assistantBubbleContent.innerHTML = marked.parse(accumulated);
+
+            }
+    }
+
+    document.getElementById('loading-spinner').style.display = 'none';
+    // Reset input
+    form.reset();
+    });
+    </script>
 </body>
 </html>

@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, Response, redirect, url_for, session, stream_with_context
 from database import SessionLocal, User, Conversation
 from werkzeug.security import generate_password_hash, check_password_hash
-from MedBot import MedBot
+from medbot import MedBot
 from pathlib import Path
 import mimetypes
 import markdown as md
 import html
 import json
+import base64
 
 db = SessionLocal()
 bot = MedBot()
@@ -99,17 +100,33 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-def generate_stream(user_msg, file, file_path, history, conv, bot):
-    bot.set_history(history)
-    # Génère la réponse complète d'un coup
-    reply = bot.chat(user_msg, image=file_path if file else None)
-    # Affiche la bulle user
-    yield format_bubble("user", [{"type": "text", "text": user_msg}])
-    # Affiche la bulle assistant
-    yield format_bubble("assistant", [{"type": "text", "text": reply}])
-    # Mets à jour l'historique DB
-    conv.messages = json.dumps(bot.messages)
+def generate_stream(user_msg, image_base64, conv, bot):
+    # Recharge l'historique complet avec system prompt
+    history = [{"role": "system", "content": [{"type": "text", "text": bot.system_prompt}]}]
+    if conv.messages:
+        for msg in json.loads(conv.messages):
+            if msg["role"] != "system":
+                history.append(msg)
+
+    # Ajoute le message utilisateur
+    history.append({"role": "user", "content": [{"type": "text", "text": user_msg}]})
+
+    # Appelle le modèle
+    stream = bot.chat(messages=history, image=image_base64, stream=True)
+
+    # Streaming et accumulation
+    accumulated = ""
+    for chunk in stream:
+        accumulated += chunk
+        yield chunk
+
+    # Ajoute la réponse du modèle
+    history.append({"role": "assistant", "content": [{"type": "text", "text": accumulated}]})
+
+    # Sauvegarde dans la BDD
+    conv.messages = json.dumps(history)
     db.commit()
+
 
 
 @app.route("/chat", methods=["POST"])
@@ -132,26 +149,20 @@ def chat():
         db.commit()
         session["current_conversation"] = conv.id
 
-    file_path = None
+    image_base64 = None
     if file and file.filename:
         file_path = Path(f"uploads/{file.filename}")
         file.save(file_path)
-
-    history = json.loads(conv.messages or "[]")
-
-    # Ajoute le message système si l'historique est vide
-    if len(history) == 0:
-        with open("system_prompt.md", "r", encoding="utf-8") as f:
-            system_prompt = f.read()
-        history.append({"role": "system", "content": [{"type": "text", "text": system_prompt}]})
-
-   # history.append({"role": "user", "content": [{"type": "text", "text": user_msg}]})
-
+        with open(file_path, "rb") as f:
+            image_base64 = base64.b64encode(f.read()).decode("utf-8")
 
     return Response(
-        stream_with_context(generate_stream(user_msg, file, file_path, history, conv, bot)),
-        mimetype="text/html"
+        stream_with_context(generate_stream(user_msg, image_base64, conv, bot)),
+        mimetype="text/plain"
     )
+
+
+
 
 @app.route("/conversations")
 def conversations():
